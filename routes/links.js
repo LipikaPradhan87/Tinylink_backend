@@ -62,7 +62,7 @@ router.get("/:code/preview", async (req, res) => {
   const { code } = req.params;
   try {
     const result = await pool.query(
-      "SELECT code, target, clicks, last_clicked FROM links WHERE code=$1",
+      "SELECT code, target, clicks, last_clicked FROM links WHERE LOWER(code) = LOWER($1)",
       [code]
     );
     if (!result.rows.length) return res.status(404).json({ error: "Not found" });
@@ -166,7 +166,7 @@ router.get("/all", async (req, res) => {
 router.get("/:code", async (req, res) => {
   const { code } = req.params;
   try {
-    const result = await pool.query("SELECT * FROM links WHERE code=$1", [code]);
+    const result = await pool.query("SELECT * FROM links WHERE LOWER(code) = LOWER($1)", [code]);
     if (!result.rows.length) return res.status(404).json({ error: "Not found" });
     res.json(result.rows[0]);
   } catch (err) {
@@ -198,7 +198,7 @@ router.post("/:code/click", async (req, res) => {
   try {
     const now = new Date(); // proper Date object for PostgreSQL
     const result = await pool.query(
-      "UPDATE links SET clicks = clicks + 1, last_clicked = $2 WHERE code=$1 RETURNING *",
+      "UPDATE links SET clicks = clicks + 1, last_clicked = $2 WHERE LOWER(code) = LOWER($1) RETURNING *",
       [code, now]
     );
     if (!result.rows.length) return res.status(404).json({ error: "Not found" });
@@ -232,7 +232,7 @@ router.get("/:code/click", async (req, res) => {
     const { code } = req.params;
     const now = new Date(); // pass Date object
     const result = await pool.query(
-      "UPDATE links SET clicks = clicks + 1, last_clicked = $2 WHERE code=$1 RETURNING *",
+      "UPDATE links SET clicks = clicks + 1, last_clicked = $2 WHERE LOWER(code) = LOWER($1) RETURNING *",
       [code, now]
     );
     if (!result.rows.length) return res.status(404).json({ error: "Not found" });
@@ -261,7 +261,7 @@ router.get("/:code/click", async (req, res) => {
  *         description: Deleted successfully
  */
 router.delete("/:code", async (req, res) => {
-  await pool.query("DELETE FROM links WHERE code=$1", [req.params.code]);
+  await pool.query("DELETE FROM links WHERE LOWER(code) = LOWER($1)", [req.params.code]);
   res.json({ success: true });
 });
 

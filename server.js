@@ -45,7 +45,7 @@ app.get("/r/:code", async (req, res) => {
   const { code } = req.params;
   try {
     const result = await pool.query(
-      "SELECT code, target, clicks, last_clicked FROM links WHERE code=$1",
+      "SELECT code, target, clicks, last_clicked FROM links WHERE LOWER(code) = LOWER($1)",
       [code]
     );
     if (!result.rows.length) return res.status(404).send("Short URL not found");
